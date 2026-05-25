@@ -24,7 +24,13 @@ thread_local = threading.local()
 # BASE PATH
 # =====================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )
+    )
+)
 
 DB_FOLDER = os.path.join(
     BASE_DIR,
@@ -35,6 +41,8 @@ DB_PATH = os.path.join(
     DB_FOLDER,
     "app.db",
 )
+
+print("ACTIVE DB:", DB_PATH)
 
 BACKUP_FOLDER = os.path.join(
     BASE_DIR,
@@ -331,6 +339,7 @@ def init_db():
             title TEXT,
             description TEXT DEFAULT '',
             status TEXT DEFAULT 'active',
+            goal TEXT,
             progress REAL DEFAULT 0,
             deadline_date TEXT,
             deleted INTEGER DEFAULT 0,
