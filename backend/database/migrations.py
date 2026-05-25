@@ -131,6 +131,13 @@ def run_migrations():
     )
 
     add_column_if_not_exists(
+    cursor,
+    "playlists",
+    "goal",
+    "TEXT DEFAULT ''",
+    )
+
+    add_column_if_not_exists(
         cursor,
         "playlists",
         "target_days",
