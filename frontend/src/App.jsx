@@ -314,14 +314,14 @@ export default function App() {
 
         color: "white",
 
-        height: "100vh",
+        minHeight: "100vh",
 
         display: "flex",
 
         flexDirection:
           "column",
 
-        overflow: "hidden",
+        overflowX: "hidden",
       }}
     >
 
@@ -489,73 +489,245 @@ export default function App() {
 
       </div>
 
-      {/* CENTER */}
+      {/* MAIN CONTENT */}
 
       <div
         style={{
-
-          flex: 1,
-
-          overflow: "hidden",
-
+          width: "100%",
+          maxWidth: "860px",
+          margin: "0 auto",
           padding: "22px",
-
           display: "flex",
-
-          justifyContent:
-            "center",
+          flexDirection: "column",
+          gap: "24px",
         }}
       >
 
+        {/* CENTER PANEL */}
+
+        <CenterPanel
+
+          calendarDays={
+            calendarDays
+          }
+
+          setCalendarDays={
+            setCalendarDays
+          }
+
+          selectedDayId={
+            selectedDayId
+          }
+
+          setSelectedDayId={
+            setSelectedDayId
+          }
+
+          calculateDayProgress={
+            calculateDayProgress
+          }
+
+          getDateForDay={
+            getDateForDay
+          }
+
+          openedDay={
+            openedDay
+          }
+
+          setOpenedDay={
+            setOpenedDay
+          }
+
+        />
+
+        {/* GOAL ENGINE */}
+
         <div
           style={{
-
             width: "100%",
-
-            maxWidth:
-              "860px",
-
-            overflow:
-              "hidden",
           }}
         >
+          <div
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              marginBottom: "18px",
+            }}
+          >
+            Goal Time Engine
+          </div>
 
-          <CenterPanel
+          <div
+            style={{
+              background: "#111",
+              border: "1px solid #222",
+              borderRadius: "18px",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "18px",
+            }}
+          >
 
-            calendarDays={
-              calendarDays
-            }
+            <div
+              style={{
+                fontSize: "24px",
+                fontWeight: "700",
+              }}
+            >
+              Factory Automation
+            </div>
 
-            setCalendarDays={
-              setCalendarDays
-            }
+            <div
+              style={{
+                color: "#999",
+                fontSize: "15px",
+              }}
+            >
+              Main factory system
+            </div>
 
-            selectedDayId={
-              selectedDayId
-            }
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit,minmax(180px,1fr))",
+                gap: "14px",
+              }}
+            >
 
-            setSelectedDayId={
-              setSelectedDayId
-            }
+              <div
+                style={{
+                  background: "#181818",
+                  borderRadius: "14px",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: "13px",
+                  }}
+                >
+                  Tahmini Süre
+                </div>
 
-            calculateDayProgress={
-              calculateDayProgress
-            }
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    marginTop: "6px",
+                  }}
+                >
+                  120 saat
+                </div>
+              </div>
 
-            getDateForDay={
-              getDateForDay
-            }
+              <div
+                style={{
+                  background: "#181818",
+                  borderRadius: "14px",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: "13px",
+                  }}
+                >
+                  Gerçek Süre
+                </div>
 
-            openedDay={
-              openedDay
-            }
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#22c55e",
+                    marginTop: "6px",
+                  }}
+                >
+                  0 saat
+                </div>
+              </div>
 
-            setOpenedDay={
-              setOpenedDay
-            }
+              <div
+                style={{
+                  background: "#181818",
+                  borderRadius: "14px",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: "13px",
+                  }}
+                >
+                  Kalan Süre
+                </div>
 
-          />
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#f59e0b",
+                    marginTop: "6px",
+                  }}
+                >
+                  120 saat
+                </div>
+              </div>
 
+              <div
+                style={{
+                  background: "#181818",
+                  borderRadius: "14px",
+                  padding: "16px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#777",
+                    fontSize: "13px",
+                  }}
+                >
+                  Süre Sapması
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: "700",
+                    color: "#22c55e",
+                    marginTop: "6px",
+                  }}
+                >
+                  0 saat
+                </div>
+              </div>
+
+            </div>
+
+            <button
+              style={{
+                marginTop: "10px",
+                background:
+                  "linear-gradient(90deg,#22c55e,#16a34a)",
+                color: "black",
+                border: "none",
+                borderRadius: "14px",
+                padding: "16px",
+                fontWeight: "700",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+            >
+              ▶ START TIMER
+            </button>
+
+          </div>
         </div>
 
       </div>
