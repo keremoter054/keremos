@@ -80,6 +80,12 @@ def create_goal_service(
 
         cursor = conn.cursor()
 
+        # =====================================
+        # REMAINING TIME
+        # =====================================
+
+        remaining_minutes = payload.estimated_minutes
+
         cursor.execute(
             """
         INSERT INTO goals(
@@ -88,11 +94,16 @@ def create_goal_service(
             description,
             deadline_date,
             status,
-            progress
+            progress,
+
+            estimated_minutes,
+            actual_minutes,
+            difference_minutes,
+            remaining_minutes
 
         )
         VALUES(
-            ?, ?, ?, ?, ?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
         """,
             (
@@ -101,6 +112,10 @@ def create_goal_service(
                 payload.deadline_date,
                 "active",
                 0,
+                payload.estimated_minutes,
+                0,
+                0,
+                remaining_minutes,
             ),
         )
 
@@ -141,6 +156,18 @@ def update_goal_service(
 
         cursor = conn.cursor()
 
+        # =====================================
+        # REMAINING TIME
+        # =====================================
+
+        estimated_minutes = payload.estimated_minutes or 0
+
+        actual_minutes = payload.actual_minutes or 0
+
+        difference_minutes = payload.difference_minutes or 0
+
+        remaining_minutes = estimated_minutes + difference_minutes - actual_minutes
+
         cursor.execute(
             """
         UPDATE goals
@@ -151,7 +178,12 @@ def update_goal_service(
             description=?,
             deadline_date=?,
             status=?,
-            progress=?
+            progress=?,
+
+            estimated_minutes=?,
+            actual_minutes=?,
+            difference_minutes=?,
+            remaining_minutes=?
 
         WHERE id=?
         """,
@@ -161,6 +193,10 @@ def update_goal_service(
                 payload.deadline_date,
                 payload.status,
                 payload.progress,
+                estimated_minutes,
+                actual_minutes,
+                difference_minutes,
+                remaining_minutes,
                 goal_id,
             ),
         )

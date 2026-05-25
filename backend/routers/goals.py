@@ -12,9 +12,12 @@ from services.goal_service import (
     delete_goal_requirement_service,
 )
 
-from schemas.goal_schema import (
+from schemas.GoalCreateSchema import (
     GoalCreateSchema,
     GoalUpdateSchema,
+)
+
+from schemas.goal_schema import (
     GoalRequirementSchema,
 )
 

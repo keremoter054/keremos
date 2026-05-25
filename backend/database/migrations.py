@@ -144,6 +144,68 @@ def run_migrations():
 
     """)
 
+    # =====================================
+    # GOALS
+    # =====================================
+
+    cursor.execute("""
+
+    CREATE TABLE IF NOT EXISTS goals (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        title TEXT,
+
+        description TEXT,
+
+        deadline_date TEXT,
+
+        status TEXT DEFAULT 'active',
+
+        progress REAL DEFAULT 0,
+
+        estimated_minutes INTEGER DEFAULT 0,
+
+        actual_minutes INTEGER DEFAULT 0,
+
+        difference_minutes INTEGER DEFAULT 0,
+
+        remaining_minutes INTEGER DEFAULT 0,
+
+        deleted INTEGER DEFAULT 0,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+
+    """)
+
+    # =====================================
+    # GOAL TODOS
+    # =====================================
+
+    cursor.execute("""
+
+    CREATE TABLE IF NOT EXISTS goal_todos (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        goal_id INTEGER,
+
+        text TEXT,
+
+        completed INTEGER DEFAULT 0,
+
+        deleted INTEGER DEFAULT 0,
+
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+
+    """)
+
+    # =====================================
+    # COMMIT
+    # =====================================
+
     conn.commit()
 
     close_db(conn)

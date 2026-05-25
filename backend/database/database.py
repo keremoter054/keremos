@@ -422,6 +422,38 @@ def init_db():
         )
 
         # =====================================
+        # GOAL TIME ENGINE
+        # =====================================
+
+        add_column_if_not_exists(
+            cursor,
+            "goals",
+            "estimated_minutes",
+            "INTEGER DEFAULT 0",
+        )
+
+        add_column_if_not_exists(
+            cursor,
+            "goals",
+            "actual_minutes",
+            "INTEGER DEFAULT 0",
+        )
+
+        add_column_if_not_exists(
+            cursor,
+            "goals",
+            "difference_minutes",
+            "INTEGER DEFAULT 0",
+        )
+
+        add_column_if_not_exists(
+            cursor,
+            "goals",
+            "remaining_minutes",
+            "INTEGER DEFAULT 0",
+        )
+
+        # =====================================
         # INDEXES
         # =====================================
 
