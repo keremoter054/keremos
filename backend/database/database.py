@@ -308,17 +308,18 @@ def init_db():
         # =====================================
 
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS playlists (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            youtube_playlist_id TEXT UNIQUE,
-            title TEXT,
-            category_id INTEGER,
-            order_index INTEGER DEFAULT 0,
-            channel_name TEXT,
-            thumbnail_url TEXT,
-            video_count INTEGER DEFAULT 0
-        )
-        """)
+    CREATE TABLE IF NOT EXISTS playlists (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    youtube_playlist_id TEXT UNIQUE,
+    title TEXT,
+    category_id INTEGER,
+    goal TEXT DEFAULT '',
+    order_index INTEGER DEFAULT 0,
+    channel_name TEXT,
+    thumbnail_url TEXT,
+    video_count INTEGER DEFAULT 0
+)
+""")
 
         # =====================================
         # GOALS
@@ -417,8 +418,8 @@ def init_db():
         add_column_if_not_exists(
             cursor,
             "playlists",
-            "goal_id",
-            "INTEGER",
+            "goal",
+            "TEXT DEFAULT ''",
         )
 
         # =====================================

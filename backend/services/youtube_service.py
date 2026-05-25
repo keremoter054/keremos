@@ -218,66 +218,88 @@ def get_video_details(
 
     try:
 
-        if isinstance(
-            video_ids,
-            list,
-        ):
-
-            video_ids = ",".join(video_ids)
-
-        url = f"{YOUTUBE_BASE_URL}/videos"
-
-        params = {
-            "part": "snippet,contentDetails",
-            "id": video_ids,
-            "key": YOUTUBE_API_KEY,
-        }
-
-        response = requests.get(
-            url,
-            params=params,
-            timeout=30,
-        )
-
-        data = response.json()
-
         results = []
 
-        for item in data.get(
-            "items",
-            [],
+        # =====================================
+        # CHUNK 50
+        # =====================================
+
+        for i in range(
+            0,
+            len(video_ids),
+            50,
         ):
 
-            snippet = item["snippet"]
+            chunk = video_ids[i : i + 50]
 
-            content = item["contentDetails"]
+            ids = ",".join(chunk)
 
-            duration_iso = content.get(
-                "duration",
-                "PT0S",
+            url = f"{YOUTUBE_BASE_URL}/videos"
+
+            params = {
+                "part": "snippet,contentDetails",
+                "id": ids,
+                "key": YOUTUBE_API_KEY,
+            }
+
+            response = requests.get(
+                url,
+                params=params,
+                timeout=30,
             )
 
-            duration_seconds = int(isodate.parse_duration(duration_iso).total_seconds())
+            data = response.json()
 
-            results.append(
-                {
-                    "youtube_video_id": item["id"],
-                    "title": snippet.get("title"),
-                    "channel_name": snippet.get("channelTitle"),
-                    "thumbnail_url": snippet.get(
-                        "thumbnails",
-                        {},
-                    )
-                    .get(
-                        "high",
-                        {},
-                    )
-                    .get("url"),
-                    "duration_seconds": duration_seconds,
-                }
-            )
+            for item in data.get(
+                "items",
+                [],
+            ):
+
+                snippet = item["snippet"]
+
+                content = item["contentDetails"]
+
+                duration_iso = content.get(
+                    "duration",
+                    "PT0S",
+                )
+
+                duration_seconds = int(
+                    isodate.parse_duration(duration_iso).total_seconds()
+                )
+
+                results.append(
+                    {
+                        "youtube_video_id": item["id"],
+                        "title": snippet.get("title"),
+                        "channel_name": snippet.get("channelTitle"),
+                        "thumbnail_url": snippet.get(
+                            "thumbnails",
+                            {},
+                        )
+                        .get(
+                            "high",
+                            {},
+                        )
+                        .get("url"),
+                        "duration_seconds": duration_seconds,
+                    }
+                )
+
+        print(f"""
+✅ VIDEO DETAILS FETCHED
+
+COUNT:
+{len(results)}
+""")
 
         return results
+
+    except Exception:
+
+        traceback.print_exc()
+
+        return []
 
     except Exception:
 

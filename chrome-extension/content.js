@@ -1,7 +1,7 @@
 let lastTime = 0;
 
 setInterval(() => {
-    fetch("http://127.0.0.1:8000/smart-progress/1")
+    fetch("http://178.105.162.244:8000/smart-progress/1")
     .then(res => res.json())
     .then(data => {
         console.log("🎯 PROGRESS:", data);
@@ -30,7 +30,7 @@ setInterval(() => {
         duration: duration
     });
 
-    fetch("http://127.0.0.1:8000/watch/progress", {
+    fetch("http://178.105.162.244:8000/watch/progress", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

@@ -82,6 +82,7 @@ def import_playlist(
         result = import_playlist_service(
             payload.playlist_url,
             payload.category,
+            payload.goal,
         )
 
         return result

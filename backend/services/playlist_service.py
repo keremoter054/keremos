@@ -103,8 +103,13 @@ def get_all_playlists():
 
         cursor.execute("""
         SELECT
-            *
+            playlists.*,
+            categories.name as category
         FROM playlists
+
+        LEFT JOIN categories
+        ON playlists.category_id = categories.id
+
         ORDER BY order_index ASC
         """)
 
@@ -137,6 +142,7 @@ def get_all_playlists():
 def import_playlist_service(
     playlist_url,
     category_name,
+    goal,
 ):
 
     conn = connect_db()
@@ -218,9 +224,19 @@ def import_playlist_service(
 
         raw_videos = get_playlist_videos(playlist_id)
 
+        print(f"""
+RAW VIDEOS:
+{len(raw_videos)}
+""")
+
         video_ids = [video["youtube_video_id"] for video in raw_videos]
 
         video_details = get_video_details(video_ids)
+
+        print(f"""
+VIDEO DETAILS:
+{len(video_details)}
+""")
 
         stats = calculate_playlist_stats(video_details)
 
@@ -237,6 +253,7 @@ def import_playlist_service(
                 youtube_playlist_id,
                 title,
                 category_id,
+                goal,
                 order_index,
                 channel_name,
                 thumbnail_url,
@@ -246,7 +263,7 @@ def import_playlist_service(
 
             )
             VALUES(
-                ?, ?, ?, ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             )
 
             ON CONFLICT(
@@ -257,6 +274,7 @@ def import_playlist_service(
 
                 title=excluded.title,
                 category_id=excluded.category_id,
+                goal=excluded.goal,
                 channel_name=excluded.channel_name,
                 thumbnail_url=excluded.thumbnail_url,
                 video_count=excluded.video_count,
@@ -266,6 +284,7 @@ def import_playlist_service(
                 playlist_id,
                 metadata["title"],
                 category_id,
+                goal,
                 next_order,
                 metadata["channel_name"],
                 metadata["thumbnail_url"],
@@ -334,6 +353,12 @@ def import_playlist_service(
 
 TITLE:
 {metadata["title"]}
+
+CATEGORY:
+{category_name}
+
+GOAL:
+{goal}
 
 VIDEOS:
 {inserted_count}
