@@ -24,7 +24,19 @@ export default function HourTaskModal({
 
   setCalendarDays,
 
+  playlists = [],
 }) {
+
+  // =====================================
+  // LINKED PLAYLIST
+  // =====================================
+
+  const linkedPlaylist =
+    playlists.find(
+      (playlist) =>
+        playlist.id ===
+        block.playlist_id
+    );
 
   // =====================================
   // SAVE BLOCK
@@ -120,6 +132,15 @@ export default function HourTaskModal({
 
           completed:
             false,
+
+          estimated_minutes:
+            30,
+
+          priority:
+            1,
+
+          difficulty:
+            1,
 
           requirements:
             [],
@@ -282,6 +303,12 @@ export default function HourTaskModal({
 
                       completed:
                         false,
+
+                      priority:
+                        1,
+
+                      difficulty:
+                        1,
                     },
                   ],
                 }
@@ -630,8 +657,6 @@ export default function HourTaskModal({
 
                         />
 
-                        {/* REQUIREMENTS */}
-
                         {
                           opened && (
 
@@ -717,10 +742,10 @@ export default function HourTaskModal({
                                         display:
                                           "flex",
 
-                                        alignItems:
-                                          "center",
+                                        flexDirection:
+                                          "column",
 
-                                        gap: "12px",
+                                        gap: "10px",
 
                                         background:
                                           "#151515",
@@ -732,93 +757,204 @@ export default function HourTaskModal({
                                           "12px",
 
                                         padding:
-                                          "10px",
+                                          "12px",
 
                                         marginBottom:
                                           "10px",
                                       }}
                                     >
 
-                                      <input
+                                      <div
+                                        style={{
 
-                                        type="checkbox"
+                                          display:
+                                            "flex",
 
-                                        checked={
-                                          req.completed
-                                        }
+                                          alignItems:
+                                            "center",
 
-                                        onChange={(
-                                          e
-                                        ) =>
-                                          updateRequirement(
+                                          gap: "12px",
+                                        }}
+                                      >
 
-                                            item.id,
+                                        <input
 
-                                            req.id,
+                                          type="checkbox"
 
-                                            "completed",
+                                          checked={
+                                            req.completed
+                                          }
 
+                                          onChange={(
                                             e
-                                              .target
-                                              .checked
-                                          )
-                                        }
+                                          ) =>
+                                            updateRequirement(
 
-                                      />
+                                              item.id,
 
-                                      <input
+                                              req.id,
 
-                                        value={
-                                          req.text
-                                        }
+                                              "completed",
 
-                                        onChange={(
-                                          e
-                                        ) =>
-                                          updateRequirement(
+                                              e
+                                                .target
+                                                .checked
+                                            )
+                                          }
 
-                                            item.id,
+                                        />
 
-                                            req.id,
+                                        <input
 
-                                            "text",
+                                          value={
+                                            req.text
+                                          }
 
+                                          onChange={(
                                             e
-                                              .target
-                                              .value
-                                          )
-                                        }
+                                          ) =>
+                                            updateRequirement(
 
-                                        placeholder="
+                                              item.id,
+
+                                              req.id,
+
+                                              "text",
+
+                                              e
+                                                .target
+                                                .value
+                                            )
+                                          }
+
+                                          placeholder="
 Yeni gereksinim
 "
 
-                                        style={
-                                          inputStyle
-                                        }
+                                          style={
+                                            inputStyle
+                                          }
 
-                                      />
+                                        />
 
-                                      <button
+                                        <button
 
-                                        onClick={() =>
-                                          deleteRequirement(
+                                          onClick={() =>
+                                            deleteRequirement(
 
-                                            item.id,
+                                              item.id,
 
-                                            req.id
-                                          )
-                                        }
+                                              req.id
+                                            )
+                                          }
 
-                                        style={
-                                          deleteButton
-                                        }
+                                          style={
+                                            deleteButton
+                                          }
 
+                                        >
+
+                                          Sil
+
+                                        </button>
+
+                                      </div>
+
+                                      <div
+                                        style={{
+
+                                          display:
+                                            "grid",
+
+                                          gridTemplateColumns:
+                                            "1fr 1fr",
+
+                                          gap:
+                                            "10px",
+                                        }}
                                       >
 
-                                        Sil
+                                        <select
 
-                                      </button>
+                                          value={
+                                            req.priority || 1
+                                          }
+
+                                          onChange={(e) =>
+                                            updateRequirement(
+
+                                              item.id,
+
+                                              req.id,
+
+                                              "priority",
+
+                                              Number(
+                                                e.target.value
+                                              )
+                                            )
+                                          }
+
+                                          style={
+                                            inputStyle
+                                          }
+                                        >
+
+                                          <option value={1}>
+                                            Priority 1
+                                          </option>
+
+                                          <option value={2}>
+                                            Priority 2
+                                          </option>
+
+                                          <option value={3}>
+                                            Priority 3
+                                          </option>
+
+                                        </select>
+
+                                        <select
+
+                                          value={
+                                            req.difficulty || 1
+                                          }
+
+                                          onChange={(e) =>
+                                            updateRequirement(
+
+                                              item.id,
+
+                                              req.id,
+
+                                              "difficulty",
+
+                                              Number(
+                                                e.target.value
+                                              )
+                                            )
+                                          }
+
+                                          style={
+                                            inputStyle
+                                          }
+                                        >
+
+                                          <option value={1}>
+                                            Kolay
+                                          </option>
+
+                                          <option value={2}>
+                                            Orta
+                                          </option>
+
+                                          <option value={3}>
+                                            Zor
+                                          </option>
+
+                                        </select>
+
+                                      </div>
 
                                     </div>
                                   )
@@ -877,7 +1013,7 @@ Yeni gereksinim
       <div
         style={{
 
-          width: "900px",
+          width: "1000px",
 
           maxHeight:
             "90vh",
@@ -898,6 +1034,115 @@ Yeni gereksinim
             "28px",
         }}
       >
+
+        {/* PLAYLIST INFO */}
+
+        {
+          linkedPlaylist && (
+
+            <div
+              style={{
+
+                background:
+                  "#151515",
+
+                border:
+                  "1px solid #2a2a2a",
+
+                borderRadius:
+                  "18px",
+
+                padding:
+                  "18px",
+
+                marginBottom:
+                  "24px",
+              }}
+            >
+
+              <div
+                style={{
+
+                  fontSize:
+                    "22px",
+
+                  fontWeight:
+                    "bold",
+
+                  marginBottom:
+                    "16px",
+                }}
+              >
+
+                🎓 Playlist Learning Info
+
+              </div>
+
+              <div
+                style={{
+
+                  display:
+                    "grid",
+
+                  gridTemplateColumns:
+                    "repeat(4,1fr)",
+
+                  gap:
+                    "14px",
+                }}
+              >
+
+                <InfoCard
+                  title="Playlist"
+                  value={
+                    linkedPlaylist.title
+                  }
+                />
+
+                <InfoCard
+                  title="Sıra"
+                  value={
+                    linkedPlaylist.order_index || 0
+                  }
+                />
+
+                <InfoCard
+                  title="Toplam Saat"
+                  value={`${linkedPlaylist.toplam_saat || 0} saat`}
+                />
+
+                <InfoCard
+                  title="Kalan"
+                  value={`${linkedPlaylist.remaining_minutes || 0} dk`}
+                />
+
+                <InfoCard
+                  title="Günlük"
+                  value={`${linkedPlaylist.daily_target_minutes || 0} dk`}
+                />
+
+                <InfoCard
+                  title="Target"
+                  value={`${linkedPlaylist.target_days || 0} gün`}
+                />
+
+                <InfoCard
+                  title="Priority"
+                  value={
+                    linkedPlaylist.priority_level || 1
+                  }
+                />
+
+                <InfoCard
+                  title="Tamamlanma"
+                  value={`${linkedPlaylist.yuzde || 0}%`}
+                />
+
+              </div>
+
+            </div>
+          )
+        }
 
         <div
           style={{
@@ -975,6 +1220,73 @@ Yeni gereksinim
         {renderTasks()}
 
         {renderDevelopments()}
+
+      </div>
+
+    </div>
+  );
+}
+
+// =====================================
+// INFO CARD
+// =====================================
+
+function InfoCard({
+
+  title,
+  value,
+
+}) {
+
+  return (
+
+    <div
+      style={{
+
+        background:
+          "#101010",
+
+        border:
+          "1px solid #262626",
+
+        borderRadius:
+          "14px",
+
+        padding:
+          "14px",
+      }}
+    >
+
+      <div
+        style={{
+
+          fontSize:
+            "12px",
+
+          opacity:
+            0.6,
+
+          marginBottom:
+            "8px",
+        }}
+      >
+
+        {title}
+
+      </div>
+
+      <div
+        style={{
+
+          fontWeight:
+            "bold",
+
+          fontSize:
+            "15px",
+        }}
+      >
+
+        {value}
 
       </div>
 
@@ -1094,10 +1406,11 @@ function SortableTodoItem({
 
         display: "flex",
 
-        alignItems:
-          "center",
+        flexDirection:
+          "column",
 
-        gap: "12px",
+        gap:
+          "12px",
 
         background:
           "#181818",
@@ -1109,7 +1422,7 @@ function SortableTodoItem({
           "14px",
 
         padding:
-          "12px",
+          "14px",
 
         marginBottom:
           "10px",
@@ -1117,92 +1430,235 @@ function SortableTodoItem({
     >
 
       <div
-
-        {...attributes}
-
-        {...listeners}
-
         style={{
 
-          cursor: "grab",
+          display:
+            "flex",
 
-          opacity: 0.5,
+          alignItems:
+            "center",
 
-          userSelect:
-            "none",
+          gap:
+            "12px",
         }}
       >
 
-        ☰
+        <div
+
+          {...attributes}
+
+          {...listeners}
+
+          style={{
+
+            cursor: "grab",
+
+            opacity: 0.5,
+
+            userSelect:
+              "none",
+          }}
+        >
+
+          ☰
+
+        </div>
+
+        <input
+
+          type="checkbox"
+
+          checked={
+            item.completed
+          }
+
+          onChange={(e) =>
+            updateItem(
+
+              type,
+
+              item.id,
+
+              "completed",
+
+              e.target.checked
+            )
+          }
+
+        />
+
+        <input
+
+          value={item.text}
+
+          onChange={(e) =>
+            updateItem(
+
+              type,
+
+              item.id,
+
+              "text",
+
+              e.target.value
+            )
+          }
+
+          placeholder="Yeni görev..."
+
+          style={inputStyle}
+
+        />
+
+        {extraButton}
+
+        <button
+
+          onClick={() =>
+            deleteItem(
+              type,
+              item.id
+            )
+          }
+
+          style={
+            deleteButton
+          }
+
+        >
+
+          Sil
+
+        </button>
 
       </div>
 
-      <input
+      <div
+        style={{
 
-        type="checkbox"
+          display:
+            "grid",
 
-        checked={
-          item.completed
-        }
+          gridTemplateColumns:
+            "1fr 1fr 1fr",
 
-        onChange={(e) =>
-          updateItem(
-
-            type,
-
-            item.id,
-
-            "completed",
-
-            e.target.checked
-          )
-        }
-
-      />
-
-      <input
-
-        value={item.text}
-
-        onChange={(e) =>
-          updateItem(
-
-            type,
-
-            item.id,
-
-            "text",
-
-            e.target.value
-          )
-        }
-
-        placeholder="Yeni görev..."
-
-        style={inputStyle}
-
-      />
-
-      {extraButton}
-
-      <button
-
-        onClick={() =>
-          deleteItem(
-            type,
-            item.id
-          )
-        }
-
-        style={
-          deleteButton
-        }
-
+          gap:
+            "10px",
+        }}
       >
 
-        Sil
+        <input
 
-      </button>
+          type="number"
+
+          value={
+            item.estimated_minutes || 0
+          }
+
+          onChange={(e) =>
+            updateItem(
+
+              type,
+
+              item.id,
+
+              "estimated_minutes",
+
+              Number(
+                e.target.value
+              )
+            )
+          }
+
+          placeholder="Tahmini dk"
+
+          style={
+            inputStyle
+          }
+
+        />
+
+        <select
+
+          value={
+            item.priority || 1
+          }
+
+          onChange={(e) =>
+            updateItem(
+
+              type,
+
+              item.id,
+
+              "priority",
+
+              Number(
+                e.target.value
+              )
+            )
+          }
+
+          style={
+            inputStyle
+          }
+        >
+
+          <option value={1}>
+            Priority 1
+          </option>
+
+          <option value={2}>
+            Priority 2
+          </option>
+
+          <option value={3}>
+            Priority 3
+          </option>
+
+        </select>
+
+        <select
+
+          value={
+            item.difficulty || 1
+          }
+
+          onChange={(e) =>
+            updateItem(
+
+              type,
+
+              item.id,
+
+              "difficulty",
+
+              Number(
+                e.target.value
+              )
+            )
+          }
+
+          style={
+            inputStyle
+          }
+        >
+
+          <option value={1}>
+            Kolay
+          </option>
+
+          <option value={2}>
+            Orta
+          </option>
+
+          <option value={3}>
+            Zor
+          </option>
+
+        </select>
+
+      </div>
 
     </div>
   );
@@ -1299,7 +1755,8 @@ const closeButton = {
   background:
     "#222",
 
-  color: "white",
+  color:
+    "white",
 
   border:
     "1px solid #333",
