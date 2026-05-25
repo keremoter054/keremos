@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import HourTaskModal from "./HourTaskModal.jsx";
 
@@ -8,30 +8,37 @@ import {
 } from "@dnd-kit/core";
 
 import {
-  arrayMove,
   SortableContext,
-  verticalListSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+
+// =====================================
+// MAIN
+// =====================================
 
 export default function CenterPanel({
 
   calendarDays,
 
+  setCalendarDays,
+
   selectedDayId,
+
   setSelectedDayId,
 
   calculateDayProgress,
+
   getDateForDay,
 
-  setCalendarDays,
-
+  playlists = [],
 }) {
 
   // =====================================
-  // STATES
+  // MODAL
   // =====================================
 
   const [
@@ -40,11 +47,206 @@ export default function CenterPanel({
   ] =
     useState(null);
 
+  // =====================================
+  // EXPANDED DAY
+  // =====================================
+
   const [
     expandedDayId,
     setExpandedDayId,
   ] =
     useState(null);
+
+  // =====================================
+  // GOALS
+  // =====================================
+
+  const [
+    goals,
+    setGoals,
+  ] =
+    useState(() => {
+
+      const saved =
+        localStorage.getItem(
+          "keremos_goals"
+        );
+
+      return saved
+        ? JSON.parse(saved)
+        : [];
+    });
+
+  const [
+    newGoal,
+    setNewGoal,
+  ] =
+    useState("");
+
+  // =====================================
+  // GOALS PANEL
+  // =====================================
+
+  const [
+    goalsPanelOpen,
+    setGoalsPanelOpen,
+  ] =
+    useState(false);
+
+  // =====================================
+  // AUTO SAVE GOALS
+  // =====================================
+
+  useEffect(() => {
+
+    localStorage.setItem(
+
+      "keremos_goals",
+
+      JSON.stringify(
+        goals
+      )
+
+    );
+
+  }, [goals]);
+
+  // =====================================
+  // ADD GOAL
+  // =====================================
+
+  function addGoal() {
+
+    if (!newGoal.trim()) {
+      return;
+    }
+
+    setGoals([
+
+      ...goals,
+
+      {
+        id: Date.now(),
+
+        text: newGoal,
+
+        completed: false,
+
+        order:
+          goals.length + 1,
+      },
+    ]);
+
+    setNewGoal("");
+  }
+
+  // =====================================
+  // TOGGLE GOAL
+  // =====================================
+
+  function toggleGoal(
+    goalId
+  ) {
+
+    setGoals(
+
+      goals.map(
+        (goal) =>
+
+          goal.id === goalId
+
+            ? {
+
+                ...goal,
+
+                completed:
+                  !goal.completed,
+              }
+
+            : goal
+      )
+    );
+  }
+
+  // =====================================
+  // DELETE GOAL
+  // =====================================
+
+  function deleteGoal(
+    goalId
+  ) {
+
+    setGoals(
+
+      goals.filter(
+        (goal) =>
+          goal.id !== goalId
+      )
+    );
+  }
+
+  // =====================================
+  // GOAL DRAG
+  // =====================================
+
+  function handleGoalDragEnd(
+    event
+  ) {
+
+    const {
+      active,
+      over,
+    } = event;
+
+    if (
+      !over ||
+      active.id === over.id
+    ) {
+      return;
+    }
+
+    const oldIndex =
+      goals.findIndex(
+        (goal) =>
+          goal.id ===
+          active.id
+      );
+
+    const newIndex =
+      goals.findIndex(
+        (goal) =>
+          goal.id ===
+          over.id
+      );
+
+    const reordered =
+      arrayMove(
+
+        goals,
+
+        oldIndex,
+
+        newIndex
+      );
+
+    const updated =
+      reordered.map(
+        (
+          goal,
+          index
+        ) => ({
+
+          ...goal,
+
+          order:
+            index + 1,
+        })
+      );
+
+    setGoals(
+      updated
+    );
+  }
 
   // =====================================
   // TOGGLE DAY
@@ -68,12 +270,9 @@ export default function CenterPanel({
   // ADD BLOCK
   // =====================================
 
-  function addQuickHourBlock(
-    e,
+  function addHourBlock(
     dayId
   ) {
-
-    e.stopPropagation();
 
     const updated =
       calendarDays.map(
@@ -82,7 +281,6 @@ export default function CenterPanel({
           if (
             day.day !== dayId
           ) {
-
             return day;
           }
 
@@ -96,8 +294,7 @@ export default function CenterPanel({
 
               {
 
-                id:
-                  Date.now(),
+                id: Date.now(),
 
                 start:
                   "08:00",
@@ -106,12 +303,17 @@ export default function CenterPanel({
                   "09:00",
 
                 title:
-                  "Yeni Başlık",
+                  "Yeni Görev",
+
+                playlist_id:
+                  null,
+
+                planned_minutes:
+                  60,
 
                 tasks: [],
 
-                developments:
-                  [],
+                developments: [],
               },
             ],
           };
@@ -141,8 +343,7 @@ export default function CenterPanel({
 
           hourBlocks:
             (
-              day.hourBlocks ||
-              []
+              day.hourBlocks || []
             ).map(
               (block) =>
 
@@ -183,10 +384,10 @@ export default function CenterPanel({
 
           hourBlocks:
             (
-              day.hourBlocks ||
-              []
+              day.hourBlocks || []
             ).filter(
               (block) =>
+
                 block.id !==
                 blockId
             ),
@@ -199,72 +400,6 @@ export default function CenterPanel({
 
     setSelectedBlock(
       null
-    );
-  }
-
-  // =====================================
-  // DRAG END
-  // =====================================
-
-  function handleDragEnd(
-    event,
-    day
-  ) {
-
-    const {
-      active,
-      over,
-    } = event;
-
-    if (
-      !over ||
-      active.id === over.id
-    ) {
-
-      return;
-    }
-
-    const oldIndex =
-      day.hourBlocks.findIndex(
-        (b) =>
-          b.id === active.id
-      );
-
-    const newIndex =
-      day.hourBlocks.findIndex(
-        (b) =>
-          b.id === over.id
-      );
-
-    const reordered =
-      arrayMove(
-
-        day.hourBlocks,
-
-        oldIndex,
-
-        newIndex
-      );
-
-    const updated =
-      calendarDays.map(
-        (d) =>
-
-          d.day === day.day
-
-            ? {
-
-                ...d,
-
-                hourBlocks:
-                  reordered,
-              }
-
-            : d
-      );
-
-    setCalendarDays(
-      updated
     );
   }
 
@@ -306,6 +441,73 @@ export default function CenterPanel({
   }
 
   // =====================================
+  // DRAG END
+  // =====================================
+
+  function handleDragEnd(
+    event,
+    day
+  ) {
+
+    const {
+      active,
+      over,
+    } = event;
+
+    if (
+      !over ||
+      active.id === over.id
+    ) {
+      return;
+    }
+
+    const oldIndex =
+      day.hourBlocks.findIndex(
+        (block) =>
+          block.id ===
+          active.id
+      );
+
+    const newIndex =
+      day.hourBlocks.findIndex(
+        (block) =>
+          block.id ===
+          over.id
+      );
+
+    const reordered =
+      arrayMove(
+
+        day.hourBlocks,
+
+        oldIndex,
+
+        newIndex
+      );
+
+    const updated =
+      calendarDays.map(
+        (d) =>
+
+          d.day === day.day
+
+            ? {
+
+                ...d,
+
+                hourBlocks:
+                  reordered,
+              }
+
+            : d
+      );
+
+    setCalendarDays(
+      updated
+    );
+  }
+
+  // =====================================
   // MAIN
   // =====================================
 
@@ -319,7 +521,7 @@ export default function CenterPanel({
         style={{
 
           background:
-            "#141414",
+            "#111",
 
           border:
             "1px solid #222",
@@ -328,25 +530,27 @@ export default function CenterPanel({
             "18px",
 
           padding:
-            "22px",
+            "20px",
 
           marginBottom:
-            "18px",
-
-          textAlign:
-            "center",
+            "20px",
         }}
       >
 
-        <h2
+        <div
           style={{
-            margin: 0,
+
+            fontSize:
+              "26px",
+
+            fontWeight:
+              "bold",
           }}
         >
 
-          365 Day Timeline
+          Timeline Engine
 
-        </h2>
+        </div>
 
       </div>
 
@@ -355,21 +559,13 @@ export default function CenterPanel({
       <div
         style={{
 
-          display: "flex",
+          display:
+            "flex",
 
           flexDirection:
             "column",
 
-          gap: "16px",
-
-          overflowY:
-            "auto",
-
-          maxHeight:
-            "78vh",
-
-          paddingRight:
-            "6px",
+          gap: "18px",
         }}
       >
 
@@ -389,6 +585,7 @@ export default function CenterPanel({
               return (
 
                 <div
+
                   key={day.day}
 
                   style={{
@@ -397,11 +594,7 @@ export default function CenterPanel({
                       "#111",
 
                     border:
-                      isExpanded
-
-                        ? "1px solid #22c55e"
-
-                        : "1px solid #222",
+                      "1px solid #222",
 
                     borderRadius:
                       "18px",
@@ -411,7 +604,7 @@ export default function CenterPanel({
                   }}
                 >
 
-                  {/* TOP */}
+                  {/* DAY HEADER */}
 
                   <div
                     onClick={() => {
@@ -436,11 +629,11 @@ export default function CenterPanel({
                       alignItems:
                         "center",
 
-                      marginBottom:
-                        "14px",
-
                       cursor:
                         "pointer",
+
+                      marginBottom:
+                        "14px",
                     }}
                   >
 
@@ -450,7 +643,7 @@ export default function CenterPanel({
                         style={{
 
                           fontSize:
-                            "28px",
+                            "26px",
 
                           fontWeight:
                             "bold",
@@ -464,14 +657,14 @@ export default function CenterPanel({
                       <div
                         style={{
 
-                          marginTop:
-                            "4px",
-
                           fontSize:
-                            "13px",
+                            "12px",
 
                           opacity:
-                            0.55,
+                            0.6,
+
+                          marginTop:
+                            "4px",
                         }}
                       >
 
@@ -487,67 +680,18 @@ export default function CenterPanel({
 
                     </div>
 
-                    {/* PLUS */}
-
                     <button
 
                       onClick={(e) => {
 
                         e.stopPropagation();
 
-                        setSelectedDayId(
+                        addHourBlock(
                           day.day
                         );
-
-                        if (
-                          expandedDayId ===
-                          day.day
-                        ) {
-
-                          setExpandedDayId(
-                            null
-                          );
-
-                          return;
-                        }
-
-                        setExpandedDayId(
-                          day.day
-                        );
-
-                        const currentDay =
-                          calendarDays.find(
-                            (d) =>
-                              d.day ===
-                              day.day
-                          );
-
-                        if (
-                          !currentDay
-                            ?.hourBlocks
-                            ?.length
-                        ) {
-
-                          addQuickHourBlock(
-                            e,
-                            day.day
-                          );
-                        }
                       }}
 
                       style={{
-
-                        width:
-                          "38px",
-
-                        height:
-                          "38px",
-
-                        borderRadius:
-                          "12px",
-
-                        border:
-                          "none",
 
                         background:
                           "#22c55e",
@@ -555,20 +699,30 @@ export default function CenterPanel({
                         color:
                           "black",
 
+                        border:
+                          "none",
+
+                        borderRadius:
+                          "12px",
+
+                        width:
+                          "40px",
+
+                        height:
+                          "40px",
+
+                        fontSize:
+                          "22px",
+
                         fontWeight:
                           "bold",
 
                         cursor:
                           "pointer",
-
-                        fontSize:
-                          "20px",
                       }}
                     >
 
-                      {isExpanded
-                        ? "−"
-                        : "+"}
+                      +
 
                     </button>
 
@@ -578,6 +732,9 @@ export default function CenterPanel({
 
                   <div
                     style={{
+
+                      width:
+                        "100%",
 
                       height:
                         "8px",
@@ -612,106 +769,6 @@ export default function CenterPanel({
 
                   </div>
 
-                  {/* COLLAPSED */}
-
-                  {
-                    !isExpanded && (
-
-                      <div>
-
-                        {
-                          (
-                            day.hourBlocks ||
-                            []
-                          ).map(
-                            (
-                              block
-                            ) => (
-
-                              <div
-                                key={
-                                  block.id
-                                }
-
-                                style={{
-
-                                  display:
-                                    "flex",
-
-                                  alignItems:
-                                    "center",
-
-                                  justifyContent:
-                                    "space-between",
-
-                                  padding:
-                                    "12px 14px",
-
-                                  background:
-                                    "#181818",
-
-                                  border:
-                                    "1px solid #262626",
-
-                                  borderRadius:
-                                    "14px",
-
-                                  marginBottom:
-                                    "10px",
-                                }}
-                              >
-
-                                <div
-                                  style={{
-
-                                    width:
-                                      "120px",
-
-                                    fontSize:
-                                      "12px",
-
-                                    opacity:
-                                      0.7,
-                                  }}
-                                >
-
-                                  {
-                                    block.start
-                                  }
-
-                                  {" - "}
-
-                                  {
-                                    block.end
-                                  }
-
-                                </div>
-
-                                <div
-                                  style={{
-
-                                    flex: 1,
-
-                                    fontWeight:
-                                      "bold",
-                                  }}
-                                >
-
-                                  {
-                                    block.title
-                                  }
-
-                                </div>
-
-                              </div>
-                            )
-                          )
-                        }
-
-                      </div>
-                    )
-                  }
-
                   {/* EXPANDED */}
 
                   {
@@ -723,39 +780,37 @@ export default function CenterPanel({
                           closestCenter
                         }
 
-                        onDragEnd={(event) =>
+                        onDragEnd={(
+                          event
+                        ) =>
                           handleDragEnd(
                             event,
                             day
                           )
                         }
-
                       >
 
                         <SortableContext
 
                           items={
                             (
-                              day.hourBlocks ||
-                              []
+                              day.hourBlocks || []
                             ).map(
-                              (b) =>
-                                b.id
+                              (block) =>
+                                block.id
                             )
                           }
 
                           strategy={
                             verticalListSortingStrategy
                           }
-
                         >
 
                           <div>
 
                             {
                               (
-                                day.hourBlocks ||
-                                []
+                                day.hourBlocks || []
                               ).map(
                                 (
                                   block
@@ -794,6 +849,9 @@ export default function CenterPanel({
                                         blockProgress
                                       }
 
+                                      playlists={
+                                        playlists
+                                      }
                                     />
                                   );
                                 }
@@ -816,6 +874,376 @@ export default function CenterPanel({
 
       </div>
 
+      {/* GOALS BUTTON */}
+
+      <div
+        style={{
+
+          marginTop:
+            "24px",
+
+          display:
+            "flex",
+
+          justifyContent:
+            "center",
+        }}
+      >
+
+        <button
+
+          onClick={() =>
+            setGoalsPanelOpen(true)
+          }
+
+          style={{
+
+            background:
+              "#181818",
+
+            color:
+              "white",
+
+            border:
+              "1px solid #333",
+
+            borderRadius:
+              "16px",
+
+            padding:
+              "16px 28px",
+
+            fontSize:
+              "18px",
+
+            fontWeight:
+              "bold",
+
+            cursor:
+              "pointer",
+
+            width:
+              "100%",
+          }}
+        >
+
+          Hedefler
+
+        </button>
+
+      </div>
+
+      {/* GOALS MODAL */}
+
+      {
+        goalsPanelOpen && (
+
+          <div
+            style={{
+
+              position:
+                "fixed",
+
+              inset: 0,
+
+              background:
+                "rgba(0,0,0,0.7)",
+
+              display:
+                "flex",
+
+              justifyContent:
+                "center",
+
+              alignItems:
+                "center",
+
+              zIndex:
+                9999,
+            }}
+          >
+
+            <div
+              style={{
+
+                width:
+                  "90%",
+
+                maxWidth:
+                  "700px",
+
+                maxHeight:
+                  "80vh",
+
+                overflowY:
+                  "auto",
+
+                background:
+                  "#111",
+
+                border:
+                  "1px solid #333",
+
+                borderRadius:
+                  "22px",
+
+                padding:
+                  "24px",
+              }}
+            >
+
+              {/* HEADER */}
+
+              <div
+                style={{
+
+                  display:
+                    "flex",
+
+                  justifyContent:
+                    "space-between",
+
+                  alignItems:
+                    "center",
+
+                  marginBottom:
+                    "20px",
+                }}
+              >
+
+                <div
+                  style={{
+
+                    fontSize:
+                      "28px",
+
+                    fontWeight:
+                      "bold",
+                  }}
+                >
+
+                  Hedefler
+
+                </div>
+
+                <button
+
+                  onClick={() =>
+                    setGoalsPanelOpen(false)
+                  }
+
+                  style={{
+
+                    background:
+                      "#7f1d1d",
+
+                    color:
+                      "white",
+
+                    border:
+                      "none",
+
+                    borderRadius:
+                      "12px",
+
+                    padding:
+                      "10px 14px",
+
+                    cursor:
+                      "pointer",
+                  }}
+                >
+
+                  Kapat
+
+                </button>
+
+              </div>
+
+              {/* INPUT */}
+
+              <div
+                style={{
+
+                  display:
+                    "flex",
+
+                  gap:
+                    "10px",
+
+                  marginBottom:
+                    "18px",
+                }}
+              >
+
+                <input
+
+                  value={
+                    newGoal
+                  }
+
+                  onChange={(e) =>
+                    setNewGoal(
+                      e.target.value
+                    )
+                  }
+
+                  placeholder="Yeni hedef ekle..."
+
+                  style={{
+
+                    flex: 1,
+
+                    background:
+                      "#101010",
+
+                    border:
+                      "1px solid #333",
+
+                    borderRadius:
+                      "12px",
+
+                    padding:
+                      "12px",
+
+                    color:
+                      "white",
+
+                    outline:
+                      "none",
+                  }}
+                />
+
+                <button
+
+                  onClick={
+                    addGoal
+                  }
+
+                  style={{
+
+                    background:
+                      "#22c55e",
+
+                    color:
+                      "black",
+
+                    border:
+                      "none",
+
+                    borderRadius:
+                      "12px",
+
+                    padding:
+                      "0 18px",
+
+                    cursor:
+                      "pointer",
+
+                    fontWeight:
+                      "bold",
+                  }}
+                >
+
+                  Ekle
+
+                </button>
+
+              </div>
+
+              {/* LIST */}
+
+              <DndContext
+
+                collisionDetection={
+                  closestCenter
+                }
+
+                onDragEnd={
+                  handleGoalDragEnd
+                }
+              >
+
+                <SortableContext
+
+                  items={
+                    goals.map(
+                      (goal) =>
+                        goal.id
+                    )
+                  }
+
+                  strategy={
+                    verticalListSortingStrategy
+                  }
+                >
+
+                  <div
+                    style={{
+
+                      display:
+                        "flex",
+
+                      flexDirection:
+                        "column",
+
+                      gap:
+                        "10px",
+                    }}
+                  >
+
+                    {
+                      goals
+
+                        .sort(
+                          (
+                            a,
+                            b
+                          ) =>
+
+                            a.order -
+                            b.order
+                        )
+
+                        .map(
+                          (
+                            goal
+                          ) => (
+
+                            <SortableGoal
+
+                              key={
+                                goal.id
+                              }
+
+                              goal={
+                                goal
+                              }
+
+                              toggleGoal={
+                                toggleGoal
+                              }
+
+                              deleteGoal={
+                                deleteGoal
+                              }
+                            />
+                          )
+                        )
+                    }
+
+                  </div>
+
+                </SortableContext>
+
+              </DndContext>
+
+            </div>
+
+          </div>
+        )
+      }
+
       {/* MODAL */}
 
       {
@@ -837,6 +1265,10 @@ export default function CenterPanel({
 
             setCalendarDays={
               setCalendarDays
+            }
+
+            playlists={
+              playlists
             }
 
           />
@@ -863,6 +1295,7 @@ function SortableBlock({
 
   blockProgress,
 
+  playlists = [],
 }) {
 
   const {
@@ -876,11 +1309,12 @@ function SortableBlock({
     transform,
 
     transition,
+  } =
+    useSortable({
 
-  } = useSortable({
-
-    id: block.id,
-  });
+      id:
+        block.id,
+    });
 
   const style = {
 
@@ -892,11 +1326,20 @@ function SortableBlock({
     transition,
   };
 
+  const linkedPlaylist =
+    playlists.find(
+      (playlist) =>
+        playlist.id ===
+        block.playlist_id
+    );
+
   return (
 
     <div
 
-      ref={setNodeRef}
+      ref={
+        setNodeRef
+      }
 
       style={{
 
@@ -922,19 +1365,19 @@ function SortableBlock({
       <div
         style={{
 
-          display: "grid",
+          display:
+            "grid",
 
           gridTemplateColumns:
-            "40px 110px 110px 1fr auto auto",
+            "40px 110px 110px 1fr 180px auto auto",
 
-          gap: "10px",
+          gap:
+            "10px",
 
           alignItems:
             "center",
         }}
       >
-
-        {/* DRAG */}
 
         <div
 
@@ -944,15 +1387,14 @@ function SortableBlock({
 
           style={{
 
-            cursor: "grab",
+            cursor:
+              "grab",
 
-            opacity: 0.5,
+            opacity:
+              0.5,
 
             textAlign:
               "center",
-
-            userSelect:
-              "none",
           }}
         >
 
@@ -960,11 +1402,11 @@ function SortableBlock({
 
         </div>
 
-        {/* START */}
-
         <input
 
-          value={block.start}
+          value={
+            block.start
+          }
 
           onChange={(e) =>
             updateHourBlock(
@@ -977,15 +1419,16 @@ function SortableBlock({
             )
           }
 
-          style={inputStyle}
-
+          style={
+            inputStyle
+          }
         />
-
-        {/* END */}
 
         <input
 
-          value={block.end}
+          value={
+            block.end
+          }
 
           onChange={(e) =>
             updateHourBlock(
@@ -998,15 +1441,16 @@ function SortableBlock({
             )
           }
 
-          style={inputStyle}
-
+          style={
+            inputStyle
+          }
         />
-
-        {/* TITLE */}
 
         <input
 
-          value={block.title}
+          value={
+            block.title
+          }
 
           onChange={(e) =>
             updateHourBlock(
@@ -1019,11 +1463,71 @@ function SortableBlock({
             )
           }
 
-          style={inputStyle}
-
+          style={
+            inputStyle
+          }
         />
 
-        {/* DETAIL */}
+        <select
+
+          value={
+            block.playlist_id || ""
+          }
+
+          onChange={(e) =>
+
+            updateHourBlock(
+
+              block.id,
+
+              "playlist_id",
+
+              e.target.value
+
+                ? Number(
+                    e.target.value
+                  )
+
+                : null
+            )
+          }
+
+          style={
+            inputStyle
+          }
+        >
+
+          <option value="">
+            Playlist Yok
+          </option>
+
+          {
+            playlists.map(
+              (
+                playlist
+              ) => (
+
+                <option
+
+                  key={
+                    playlist.id
+                  }
+
+                  value={
+                    playlist.id
+                  }
+                >
+
+                  {
+                    playlist.title
+                  }
+
+                </option>
+              )
+            )
+          }
+
+        </select>
 
         <button
 
@@ -1033,15 +1537,14 @@ function SortableBlock({
             )
           }
 
-          style={blueButton}
-
+          style={
+            blueButton
+          }
         >
 
-          Detay
+          Todo-List
 
         </button>
-
-        {/* DELETE */}
 
         <button
 
@@ -1051,8 +1554,9 @@ function SortableBlock({
             )
           }
 
-          style={redButton}
-
+          style={
+            redButton
+          }
         >
 
           Sil
@@ -1060,6 +1564,97 @@ function SortableBlock({
         </button>
 
       </div>
+
+      {/* PLAYLIST INFO */}
+
+      {
+        linkedPlaylist && (
+
+          <div
+            style={{
+
+              marginTop:
+                "14px",
+
+              background:
+                "#101010",
+
+              border:
+                "1px solid #2a2a2a",
+
+              borderRadius:
+                "12px",
+
+              padding:
+                "12px",
+
+              fontSize:
+                "12px",
+
+              display:
+                "grid",
+
+              gridTemplateColumns:
+                "repeat(5,1fr)",
+
+              gap:
+                "12px",
+            }}
+          >
+
+            <div>
+              📚 Sıra:
+              <br />
+              <strong>
+                {
+                  linkedPlaylist.order_index || 0
+                }
+              </strong>
+            </div>
+
+            <div>
+              ⏱ Toplam:
+              <br />
+              <strong>
+                {
+                  linkedPlaylist.toplam_saat || 0
+                } saat
+              </strong>
+            </div>
+
+            <div>
+              🔥 Kalan:
+              <br />
+              <strong>
+                {
+                  linkedPlaylist.remaining_minutes || 0
+                } dk
+              </strong>
+            </div>
+
+            <div>
+              🎯 Günlük:
+              <br />
+              <strong>
+                {
+                  linkedPlaylist.daily_target_minutes || 0
+                } dk
+              </strong>
+            </div>
+
+            <div>
+              📅 Hedef:
+              <br />
+              <strong>
+                {
+                  linkedPlaylist.target_days || 0
+                } gün
+              </strong>
+            </div>
+
+          </div>
+        )
+      }
 
       {/* FOOTER */}
 
@@ -1069,7 +1664,8 @@ function SortableBlock({
           marginTop:
             "14px",
 
-          display: "flex",
+          display:
+            "flex",
 
           justifyContent:
             "space-between",
@@ -1081,27 +1677,23 @@ function SortableBlock({
             "12px",
 
           opacity:
-            0.65,
+            0.7,
         }}
       >
 
         <div>
 
-          {
-            (
-              block.developments ||
-              []
-            ).length
-          }
-
-          {" "}
-          geliştirme
+          ⏱ {
+            block.planned_minutes || 0
+          } dk
 
         </div>
 
         <div>
 
-          %{blockProgress}
+          %{
+            blockProgress
+          }
 
         </div>
 
@@ -1111,12 +1703,205 @@ function SortableBlock({
   );
 }
 
+// =====================================
+// SORTABLE GOAL
+// =====================================
+
+function SortableGoal({
+
+  goal,
+
+  toggleGoal,
+
+  deleteGoal,
+}) {
+
+  const {
+
+    attributes,
+
+    listeners,
+
+    setNodeRef,
+
+    transform,
+
+    transition,
+  } =
+    useSortable({
+
+      id:
+        goal.id,
+    });
+
+  const style = {
+
+    transform:
+      CSS.Transform.toString(
+        transform
+      ),
+
+    transition,
+  };
+
+  return (
+
+    <div
+
+      ref={
+        setNodeRef
+      }
+
+      style={{
+
+        ...style,
+
+        display:
+          "flex",
+
+        justifyContent:
+          "space-between",
+
+        alignItems:
+          "center",
+
+        background:
+          "#181818",
+
+        border:
+          "1px solid #262626",
+
+        borderRadius:
+          "12px",
+
+        padding:
+          "14px",
+      }}
+    >
+
+      <div
+        style={{
+
+          display:
+            "flex",
+
+          alignItems:
+            "center",
+
+          gap:
+            "12px",
+        }}
+      >
+
+        <div
+
+          {...attributes}
+
+          {...listeners}
+
+          style={{
+
+            cursor:
+              "grab",
+
+            opacity:
+              0.5,
+          }}
+        >
+
+          ☰
+
+        </div>
+
+        <input
+
+          type="checkbox"
+
+          checked={
+            goal.completed
+          }
+
+          onChange={() =>
+            toggleGoal(
+              goal.id
+            )
+          }
+        />
+
+        <div
+          style={{
+
+            textDecoration:
+              goal.completed
+
+                ? "line-through"
+
+                : "none",
+
+            opacity:
+              goal.completed
+
+                ? 0.5
+
+                : 1,
+          }}
+        >
+
+          {goal.text}
+
+        </div>
+
+      </div>
+
+      <button
+
+        onClick={() =>
+          deleteGoal(
+            goal.id
+          )
+        }
+
+        style={{
+
+          background:
+            "#7f1d1d",
+
+          color:
+            "white",
+
+          border:
+            "none",
+
+          borderRadius:
+            "10px",
+
+          padding:
+            "8px 12px",
+
+          cursor:
+            "pointer",
+        }}
+      >
+
+        Sil
+
+      </button>
+
+    </div>
+  );
+}
+
+// =====================================
+// STYLES
+// =====================================
+
 const inputStyle = {
 
   background:
     "#101010",
 
-  color: "white",
+  color:
+    "white",
 
   border:
     "1px solid #333",
@@ -1136,9 +1921,11 @@ const blueButton = {
   background:
     "#2563eb",
 
-  color: "white",
+  color:
+    "white",
 
-  border: "none",
+  border:
+    "none",
 
   borderRadius:
     "10px",
@@ -1158,9 +1945,11 @@ const redButton = {
   background:
     "#7f1d1d",
 
-  color: "white",
+  color:
+    "white",
 
-  border: "none",
+  border:
+    "none",
 
   borderRadius:
     "10px",

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 
 import TopBar from "./panels/TopBar.jsx";
 import CenterPanel from "./panels/CenterPanel.jsx";
-
 import DayPage from "./panels/DayPage.jsx";
 
 // =====================================
@@ -71,6 +70,26 @@ export default function App() {
     useState(1);
 
   // =====================================
+  // PLAYLISTS
+  // =====================================
+
+  const [
+    playlists,
+    setPlaylists,
+  ] =
+    useState([]);
+
+  // =====================================
+  // LOADING
+  // =====================================
+
+  const [
+    loadingPlaylists,
+    setLoadingPlaylists,
+  ] =
+    useState(false);
+
+  // =====================================
   // CALENDAR DAYS
   // =====================================
 
@@ -117,6 +136,14 @@ export default function App() {
 
                     ...block,
 
+                    playlist_id:
+                      block.playlist_id ||
+                      null,
+
+                    planned_minutes:
+                      block.planned_minutes ||
+                      0,
+
                     tasks:
                       block.tasks ||
                       [],
@@ -154,6 +181,49 @@ export default function App() {
         })
       );
     });
+
+  // =====================================
+  // FETCH PLAYLISTS
+  // =====================================
+
+  async function fetchPlaylists() {
+
+    try {
+
+      setLoadingPlaylists(true);
+
+      const response =
+        await fetch(
+          "http://127.0.0.1:8000/playlists"
+        );
+
+      const data =
+        await response.json();
+
+      setPlaylists(data);
+
+    } catch (error) {
+
+      console.error(
+        "PLAYLIST FETCH ERROR",
+        error
+      );
+
+    } finally {
+
+      setLoadingPlaylists(false);
+    }
+  }
+
+  // =====================================
+  // INITIAL LOAD
+  // =====================================
+
+  useEffect(() => {
+
+    fetchPlaylists();
+
+  }, []);
 
   // =====================================
   // AUTO SAVE
@@ -539,196 +609,11 @@ export default function App() {
             setOpenedDay
           }
 
+          playlists={
+            playlists
+          }
+
         />
-
-        {/* GOAL ENGINE */}
-
-        <div
-          style={{
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              marginBottom: "18px",
-            }}
-          >
-            Goal Time Engine
-          </div>
-
-          <div
-            style={{
-              background: "#111",
-              border: "1px solid #222",
-              borderRadius: "18px",
-              padding: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "18px",
-            }}
-          >
-
-            <div
-              style={{
-                fontSize: "24px",
-                fontWeight: "700",
-              }}
-            >
-              Factory Automation
-            </div>
-
-            <div
-              style={{
-                color: "#999",
-                fontSize: "15px",
-              }}
-            >
-              Main factory system
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "repeat(auto-fit,minmax(180px,1fr))",
-                gap: "14px",
-              }}
-            >
-
-              <div
-                style={{
-                  background: "#181818",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#777",
-                    fontSize: "13px",
-                  }}
-                >
-                  Tahmini Süre
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    marginTop: "6px",
-                  }}
-                >
-                  120 saat
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#181818",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#777",
-                    fontSize: "13px",
-                  }}
-                >
-                  Gerçek Süre
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#22c55e",
-                    marginTop: "6px",
-                  }}
-                >
-                  0 saat
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#181818",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#777",
-                    fontSize: "13px",
-                  }}
-                >
-                  Kalan Süre
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#f59e0b",
-                    marginTop: "6px",
-                  }}
-                >
-                  120 saat
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#181818",
-                  borderRadius: "14px",
-                  padding: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    color: "#777",
-                    fontSize: "13px",
-                  }}
-                >
-                  Süre Sapması
-                </div>
-
-                <div
-                  style={{
-                    fontSize: "24px",
-                    fontWeight: "700",
-                    color: "#22c55e",
-                    marginTop: "6px",
-                  }}
-                >
-                  0 saat
-                </div>
-              </div>
-
-            </div>
-
-            <button
-              style={{
-                marginTop: "10px",
-                background:
-                  "linear-gradient(90deg,#22c55e,#16a34a)",
-                color: "black",
-                border: "none",
-                borderRadius: "14px",
-                padding: "16px",
-                fontWeight: "700",
-                fontSize: "16px",
-                cursor: "pointer",
-              }}
-            >
-              ▶ START TIMER
-            </button>
-
-          </div>
-        </div>
 
       </div>
 

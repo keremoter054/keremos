@@ -4,6 +4,40 @@ from database.connection import (
 )
 
 # =====================================
+# SAFE COLUMN ADD
+# =====================================
+
+
+def add_column_if_not_exists(
+    cursor,
+    table,
+    column,
+    col_type,
+):
+
+    cursor.execute(f"PRAGMA table_info({table})")
+
+    columns = [row[1] for row in cursor.fetchall()]
+
+    if column not in columns:
+
+        cursor.execute(f"""
+            ALTER TABLE {table}
+            ADD COLUMN {column} {col_type}
+            """)
+
+        print(f"""
+✅ COLUMN ADDED
+
+TABLE:
+{table}
+
+COLUMN:
+{column}
+""")
+
+
+# =====================================
 # RUN MIGRATIONS
 # =====================================
 
@@ -53,10 +87,132 @@ def run_migrations():
 
         order_index INTEGER DEFAULT 0,
 
+        goal_id INTEGER,
+
+
+        target_days INTEGER DEFAULT 0,
+
+        daily_target_minutes INTEGER DEFAULT 0,
+
+        estimated_total_minutes INTEGER DEFAULT 0,
+
+        completed_minutes INTEGER DEFAULT 0,
+
+        remaining_minutes INTEGER DEFAULT 0,
+
+        priority_level INTEGER DEFAULT 1,
+
+        speed_required REAL DEFAULT 0,
+
+        speed_current REAL DEFAULT 0,
+
+        is_delayed INTEGER DEFAULT 0,
+
+        status TEXT DEFAULT 'active',
+
+        target_finish_date TEXT,
+
+        last_study_date TEXT,
+
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
 
     """)
+
+    # =====================================
+    # SAFE PLAYLIST MIGRATIONS
+    # =====================================
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "goal_id",
+        "INTEGER",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "target_days",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "daily_target_minutes",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "estimated_total_minutes",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "completed_minutes",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "remaining_minutes",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "priority_level",
+        "INTEGER DEFAULT 1",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "speed_required",
+        "REAL DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "speed_current",
+        "REAL DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "is_delayed",
+        "INTEGER DEFAULT 0",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "status",
+        "TEXT DEFAULT 'active'",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "target_finish_date",
+        "TEXT",
+    )
+
+    add_column_if_not_exists(
+        cursor,
+        "playlists",
+        "last_study_date",
+        "TEXT",
+    )
 
     # =====================================
     # VIDEOS
@@ -203,6 +359,25 @@ def run_migrations():
     """)
 
     # =====================================
+    # INDEXES
+    # =====================================
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_playlists_order
+    ON playlists(order_index)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_playlists_status
+    ON playlists(status)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_videos_playlist
+    ON videos(playlist_id)
+    """)
+
+    # =====================================
     # COMMIT
     # =====================================
 
@@ -211,5 +386,9 @@ def run_migrations():
     close_db(conn)
 
     print("""
+
 ✅ MIGRATIONS COMPLETE
+
+🚀 LEARNING ENGINE READY
+
 """)
